@@ -296,3 +296,73 @@ body {
   color: var(--text-muted);
   font-size: 0.875rem;
 }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-active);
+  border-radius: 5px;
+  border: 2px solid var(--bg-app);
+  /* padding effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Custom Range Input */
+.custom-range {
+  -webkit-appearance: none;
+  /* Override default look */
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--bg-card);
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  border: 1px solid var(--border-subtle);
+}
+
+/* Slider Thumb */
+.custom-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--accent-primary);
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 10px var(--accent-glow);
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+  margin-top: -1px;
+  /* visual alignment if needed */
+}
+
+.custom-range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px var(--accent-primary);
+}
+
+/* Firefox Support */
+.custom-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--accent-primary);
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.custom-range::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}

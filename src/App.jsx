@@ -79,13 +79,43 @@ function App() {
         link.click();
     };
 
-    const handleFileUpload = async (e) => {
+    const [settings, setSettings] = useState({ kColors: 20, minRegionSize: 20 });
+    const resizedImageDataRef = useRef(null);
 
+    // Debounce processing
+    useEffect(() => {
+        if (!imageLoaded) return;
+
+        const timer = setTimeout(() => {
+            if (resizedImageDataRef.current) {
+                runProcessing();
+            }
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(timer);
+    }, [settings, imageLoaded]);
+
+    const runProcessing = () => {
+        if (!resizedImageDataRef.current) return;
+
+        setIsProcessing(true);
+        setStatus('Processing...');
+        setResult(null);
+
+        workerRef.current.postMessage({
+            type: 'PROCESS_IMAGE',
+            payload: {
+                imageData: resizedImageDataRef.current,
+                settings: settings
+            }
+        });
+    }
+
+    const handleFileUpload = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         setImageLoaded(true);
-        setIsProcessing(true);
         setStatus('Loading image...');
         setResult(null);
 
@@ -109,14 +139,12 @@ function App() {
         ctx.drawImage(img, 0, 0, w, h);
         const imageData = ctx.getImageData(0, 0, w, h);
 
-        workerRef.current.postMessage({
-            type: 'PROCESS_IMAGE',
-            payload: {
-                imageData: imageData,
-                settings: { kColors: 20 }
-            }
-        });
+        resizedImageDataRef.current = imageData;
+
+        // Trigger processing immediately on new upload
+        runProcessing();
     };
+
 
     return (
         <div className="app-container">
@@ -165,6 +193,43 @@ function App() {
                     </motion.div>
                 ) : (
                     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+
+                        {/* Settings Controls */}
+                        <div className="glass-panel" style={{ width: '100%', maxWidth: '600px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', fontWeight: 600, color: 'white' }}>
+                                    <Sliders style={{ width: 18, height: 18 }} /> Settings
+                                </h3>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                                <div className="control-group">
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#cbd5e1', fontSize: '0.875rem' }}>
+                                        Color Palette: <span style={{ color: 'white', fontWeight: 'bold' }}>{settings.kColors}</span>
+                                    </label>
+                                    <input
+                                        type="range" min="2" max="50" step="1"
+                                        value={settings.kColors}
+                                        onChange={e => setSettings(s => ({ ...s, kColors: parseInt(e.target.value) }))}
+                                        style={{ width: '100%' }}
+                                        className="custom-range"
+                                    />
+                                </div>
+                                <div className="control-group">
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#cbd5e1', fontSize: '0.875rem' }}>
+                                        Remove Specks: <span style={{ color: 'white', fontWeight: 'bold' }}>{settings.minRegionSize}px</span>
+                                    </label>
+                                    <input
+                                        type="range" min="0" max="100" step="5"
+                                        value={settings.minRegionSize}
+                                        onChange={e => setSettings(s => ({ ...s, minRegionSize: parseInt(e.target.value) }))}
+                                        style={{ width: '100%' }}
+                                        className="custom-range"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Progress / Status */}
                         {isProcessing && (
                             <div className="status-panel glass-panel animate-in fade-in zoom-in duration-300">

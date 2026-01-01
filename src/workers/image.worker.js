@@ -41,7 +41,7 @@ function distSq(a, b) {
  */
 function processImage({ imageData, settings }) {
     const { width, height, data } = imageData; // data is Uint8ClampedArray (RGBA)
-    const { kColors = 20 } = settings; // User can tune this
+    const { kColors = 20, minRegionSize = 20 } = settings; // User can tune this
 
     self.postMessage({ type: 'STATUS', status: 'Converting to LAB...' });
 
@@ -151,7 +151,7 @@ function processImage({ imageData, settings }) {
 
     // Iterative cleanup (do it a couple of times to ensure clean results)
     let cleanLabels = new Int32Array(labels); // Copy
-    cleanLabels = cleanupRegions(cleanLabels, width, height, 20); // Threshold 20px
+    cleanLabels = cleanupRegions(cleanLabels, width, height, minRegionSize);
 
     self.postMessage({ type: 'STATUS', status: 'Tracing Shapes...' });
     self.postMessage({ type: 'PROGRESS', progress: 80 });
